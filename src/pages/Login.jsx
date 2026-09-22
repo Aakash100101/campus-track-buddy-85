@@ -1,6 +1,11 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { login, googleLogin } from "../services/authService";
+import {
+  login,
+  googleLogin,
+  completeOAuthFromUrl,
+  onAuthStateChange,
+} from "../services/authService";
 import GoogleSignInButton from "../components/GoogleSignInButton";
 
 const inputClass =
