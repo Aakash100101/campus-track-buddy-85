@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
+import { ArrowRight, Briefcase, ClipboardList, CheckCircle2, Users } from "lucide-react";
 import AppLayout from "../components/AppLayout";
 import StatCard from "../components/StatCard";
 import StatusChart from "../components/StatusChart";
@@ -43,28 +44,32 @@ export default function Dashboard() {
       {loading ? (
         <p className="text-sm text-muted-foreground">Loading dashboard...</p>
       ) : error ? (
-        <p className="rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive">
+        <p className="rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive">
           {error}
         </p>
       ) : (
-        <div className="space-y-6">
+        <div className="space-y-5">
           <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-            <StatCard label="Total Applications" value={stats.total} />
-            <StatCard label="Assessments" value={stats.assessments} />
-            <StatCard label="Interviews" value={stats.interviews} />
-            <StatCard label="Selected" value={stats.selected} />
+            <StatCard label="Total Applications" value={stats.total} icon={Briefcase} />
+            <StatCard label="Assessments" value={stats.assessments} icon={ClipboardList} />
+            <StatCard label="Interviews" value={stats.interviews} icon={Users} />
+            <StatCard label="Selected" value={stats.selected} icon={CheckCircle2} />
           </div>
 
           <StatusChart applications={applications} />
 
-          <div className="rounded-lg border border-border bg-card">
-            <div className="flex items-center justify-between border-b border-border px-4 py-3">
-              <h2 className="text-sm font-semibold text-foreground">Recent Applications</h2>
+          <section className="rounded-xl border border-border bg-card shadow-[0_1px_2px_rgba(16,24,40,0.04)]">
+            <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-3">
+              <div className="min-w-0">
+                <h2 className="text-sm font-semibold text-foreground">Recent Applications</h2>
+                <p className="mt-0.5 text-xs text-muted-foreground">Your latest five entries</p>
+              </div>
               <Link
                 to="/applications"
-                className="text-sm font-medium text-primary transition-colors hover:underline"
+                className="inline-flex shrink-0 items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-primary transition-colors hover:bg-accent"
               >
                 View all
+                <ArrowRight className="size-3.5" />
               </Link>
             </div>
             {recent.length === 0 ? (
@@ -75,7 +80,7 @@ export default function Dashboard() {
             ) : (
               <ApplicationTable applications={recent} compact />
             )}
-          </div>
+          </section>
         </div>
       )}
     </AppLayout>
