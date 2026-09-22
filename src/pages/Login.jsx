@@ -1,6 +1,11 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { login, googleLogin } from "../services/authService";
+import {
+  login,
+  googleLogin,
+  completeOAuthFromUrl,
+  onAuthStateChange,
+} from "../services/authService";
 import GoogleSignInButton from "../components/GoogleSignInButton";
 
 const inputClass =
@@ -30,6 +35,34 @@ export default function Login() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+
+  // Finish any OAuth redirect (tokens in the URL hash) and send signed-in
+  // users straight to the dashboard. Also covers a plain visit to /login
+  // while already authenticated.
+  useEffect(() => {
+    let cancelled = false;
+
+    completeOAuthFromUrl()
+      .then((session) => {
+        if (!cancelled && session) navigate({ to: "/dashboard", replace: true });
+      })
+      .catch((err) => {
+        if (!cancelled) setError(err.message);
+      });
+
+    const unsubscribe = onAuthStateChange((event, session) => {
+      if (cancelled) return;
+      if ((event === "SIGNED_IN" || event === "INITIAL_SESSION") && session) {
+        navigate({ to: "/dashboard", replace: true });
+      }
+    });
+
+    return () => {
+      cancelled = true;
+      unsubscribe();
+    };
+  }, [navigate]);
+
 
   async function handleSubmit(event) {
     event.preventDefault();

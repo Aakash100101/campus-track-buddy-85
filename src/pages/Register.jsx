@@ -1,7 +1,21 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { register, googleLogin } from "../services/authService";
+import {
+  register,
+  googleLogin,
+  completeOAuthFromUrl,
+  onAuthStateChange,
+} from "../services/authService";
 import GoogleSignInButton from "../components/GoogleSignInButton";
+import { getPasswordStrength, MIN_PASSWORD_LENGTH } from "../lib/password";
+
+const strengthStyles = {
+  weak: { bar: "bg-destructive", text: "text-destructive" },
+  fair: { bar: "bg-amber-500", text: "text-amber-600" },
+  good: { bar: "bg-primary/70", text: "text-primary" },
+  strong: { bar: "bg-primary", text: "text-primary" },
+  muted: { bar: "bg-border", text: "text-muted-foreground" },
+};
 
 const inputClass =
   "h-10 w-full rounded-lg border border-input bg-card px-3 text-sm text-foreground outline-none transition-colors duration-150 placeholder:text-muted-foreground/70 focus:border-primary focus:ring-2 focus:ring-ring/20";
@@ -30,6 +44,32 @@ export default function Register() {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
 
+  const strength = useMemo(() => getPasswordStrength(form.password), [form.password]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    completeOAuthFromUrl()
+      .then((session) => {
+        if (!cancelled && session) navigate({ to: "/dashboard", replace: true });
+      })
+      .catch((err) => {
+        if (!cancelled) setError(err.message);
+      });
+
+    const unsubscribe = onAuthStateChange((event, session) => {
+      if (cancelled) return;
+      if ((event === "SIGNED_IN" || event === "INITIAL_SESSION") && session) {
+        navigate({ to: "/dashboard", replace: true });
+      }
+    });
+
+    return () => {
+      cancelled = true;
+      unsubscribe();
+    };
+  }, [navigate]);
+
   function handleChange(event) {
     const { name, value } = event.target;
     setForm((current) => ({ ...current, [name]: value }));
@@ -45,8 +85,12 @@ export default function Register() {
       setError("Please enter a valid email address.");
       return;
     }
-    if (form.password.length < 6) {
-      setError("Password must be at least 6 characters.");
+    if (form.password.length < MIN_PASSWORD_LENGTH) {
+      setError(`Password must be at least ${MIN_PASSWORD_LENGTH} characters.`);
+      return;
+    }
+    if (strength.score <= 1) {
+      setError("Please choose a stronger password — mix upper and lower case, numbers or symbols.");
       return;
     }
     if (form.password !== form.confirmPassword) {
@@ -143,6 +187,24 @@ export default function Register() {
                 onChange={handleChange}
                 className={inputClass}
               />
+              {form.password ? (
+                <div className="mt-2">
+                  <div className="h-1 w-full overflow-hidden rounded-full bg-secondary">
+                    <div
+                      className={`h-full rounded-full transition-all duration-200 ${strengthStyles[strength.tone].bar}`}
+                      style={{ width: `${strength.percent}%` }}
+                    />
+                  </div>
+                  <p
+                    className={`mt-1.5 text-[11px] font-medium ${strengthStyles[strength.tone].text}`}
+                  >
+                    {strength.label} password
+                    {strength.score <= 1
+                      ? ` — use at least ${MIN_PASSWORD_LENGTH} characters with mixed case and a number`
+                      : ""}
+                  </p>
+                </div>
+              ) : null}
             </div>
             <div>
               <label htmlFor="confirmPassword" className={labelClass}>
