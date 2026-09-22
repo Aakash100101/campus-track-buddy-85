@@ -44,6 +44,32 @@ export default function Register() {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
 
+  const strength = useMemo(() => getPasswordStrength(form.password), [form.password]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    completeOAuthFromUrl()
+      .then((session) => {
+        if (!cancelled && session) navigate({ to: "/dashboard", replace: true });
+      })
+      .catch((err) => {
+        if (!cancelled) setError(err.message);
+      });
+
+    const unsubscribe = onAuthStateChange((event, session) => {
+      if (cancelled) return;
+      if ((event === "SIGNED_IN" || event === "INITIAL_SESSION") && session) {
+        navigate({ to: "/dashboard", replace: true });
+      }
+    });
+
+    return () => {
+      cancelled = true;
+      unsubscribe();
+    };
+  }, [navigate]);
+
   function handleChange(event) {
     const { name, value } = event.target;
     setForm((current) => ({ ...current, [name]: value }));
