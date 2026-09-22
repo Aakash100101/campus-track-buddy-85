@@ -34,6 +34,23 @@ export async function login({ email, password }) {
   return { id: data.user.id, email: data.user.email, name: friendlyName(data.user) };
 }
 
+function registerErrorMessage(message) {
+  const text = message || "";
+  if (/already registered|already exists|User already/i.test(text)) {
+    return "An account with this email already exists. Please sign in.";
+  }
+  if (/pwned|known to be weak|easy to guess|compromised/i.test(text)) {
+    return "This password has appeared in known data breaches. Please choose a different, stronger password.";
+  }
+  if (/at least|too short|length/i.test(text)) {
+    return text;
+  }
+  if (/should contain|characters:/i.test(text)) {
+    return `Password does not meet the security requirements: ${text}`;
+  }
+  return text || "Could not create your account. Please try again.";
+}
+
 export async function register({ name, email, password }) {
   const { data, error } = await supabase.auth.signUp({
     email,
@@ -44,11 +61,12 @@ export async function register({ name, email, password }) {
     },
   });
   if (error) {
-    throw new Error(
-      error.message.includes("already registered")
-        ? "An account with this email already exists. Please sign in."
-        : error.message,
-    );
+    throw new Error(registerErrorMessage(error.message));
+  }
+  // Supabase returns a user with an empty identities array when the email is
+  // already taken but confirmation is pending — surface that clearly.
+  if (data.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) {
+    throw new Error("An account with this email already exists. Please sign in.");
   }
   return { needsConfirmation: !data.session };
 }
@@ -68,4 +86,57 @@ export async function googleLogin() {
 
 export async function logout() {
   await supabase.auth.signOut();
+}
+
+// Returns the active session (or null) without hitting the auth server.
+export async function getSession() {
+  const { data } = await supabase.auth.getSession();
+  return data?.session ?? null;
+}
+
+// Subscribe to auth state changes (INITIAL_SESSION, SIGNED_IN, SIGNED_OUT...).
+export function onAuthStateChange(callback) {
+  const { data } = supabase.auth.onAuthStateChange((event, session) => {
+    callback(event, session);
+  });
+  return () => data?.subscription?.unsubscribe();
+}
+
+// Some OAuth flows return the session in the URL hash. The Supabase client
+// normally consumes it automatically; this is a safe fallback that also clears
+// the tokens from the address bar once a session exists.
+export async function completeOAuthFromUrl() {
+  if (typeof window === "undefined") return null;
+  const hash = window.location.hash || "";
+  if (!hash.includes("access_token") && !hash.includes("error_description")) {
+    const { data } = await supabase.auth.getSession();
+    return data?.session ?? null;
+  }
+
+  const params = new URLSearchParams(hash.replace(/^#/, ""));
+  const accessToken = params.get("access_token");
+  const refreshToken = params.get("refresh_token");
+
+  let session = null;
+  const existing = await supabase.auth.getSession();
+  session = existing.data?.session ?? null;
+
+  if (!session && accessToken && refreshToken) {
+    const { data, error } = await supabase.auth.setSession({
+      access_token: accessToken,
+      refresh_token: refreshToken,
+    });
+    if (error) throw new Error(error.message || "Google sign-in could not be completed.");
+    session = data?.session ?? null;
+  }
+
+  if (session) {
+    // Strip the tokens from the URL without adding a history entry.
+    window.history.replaceState(
+      null,
+      "",
+      window.location.pathname + window.location.search,
+    );
+  }
+  return session;
 }
