@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import ApplicationDetails from "../pages/ApplicationDetails";
 
-export const Route = createFileRoute("/applications/$id")({
+export const Route = createFileRoute("/_authenticated/applications/$id")({
   head: () => ({
     meta: [
       { title: "Application details — CampusTrack" },
