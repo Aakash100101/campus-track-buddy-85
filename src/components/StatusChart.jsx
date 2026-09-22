@@ -13,19 +13,25 @@ export default function StatusChart({ applications }) {
   }));
 
   return (
-    <div className="rounded-lg border border-border bg-card">
-      <div className="border-b border-border px-4 py-3">
-        <h2 className="text-sm font-semibold text-foreground">Applications by Status</h2>
+    <section className="rounded-xl border border-border bg-card shadow-[0_1px_2px_rgba(16,24,40,0.04)]">
+      <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-3">
+        <div className="min-w-0">
+          <h2 className="text-sm font-semibold text-foreground">Applications by Status</h2>
+          <p className="mt-0.5 text-xs text-muted-foreground">
+            Distribution across your placement pipeline
+          </p>
+        </div>
       </div>
       <div className="h-64 px-2 py-4">
         {mounted ? (
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={data} margin={{ top: 4, right: 12, left: 0, bottom: 0 }}>
-              <CartesianGrid vertical={false} stroke="var(--border)" />
+            <BarChart data={data} margin={{ top: 8, right: 12, left: 0, bottom: 0 }}>
+              <CartesianGrid vertical={false} stroke="var(--border)" strokeDasharray="3 3" />
               <XAxis
                 dataKey="status"
                 tickLine={false}
                 axisLine={false}
+                tickMargin={10}
                 tick={{ fill: "var(--muted-foreground)", fontSize: 12 }}
               />
               <YAxis
@@ -36,17 +42,25 @@ export default function StatusChart({ applications }) {
                 tick={{ fill: "var(--muted-foreground)", fontSize: 12 }}
               />
               <Tooltip
+                cursor={{ fill: "var(--secondary)" }}
                 contentStyle={{
-                  borderRadius: 8,
+                  borderRadius: 10,
                   border: "1px solid var(--border)",
+                  boxShadow: "0 4px 12px rgba(16,24,40,0.06)",
                   fontSize: 12,
                 }}
               />
-              <Bar dataKey="count" name="Applications" fill="var(--primary)" radius={[4, 4, 0, 0]} maxBarSize={44} />
+              <Bar
+                dataKey="count"
+                name="Applications"
+                fill="var(--primary)"
+                radius={[6, 6, 0, 0]}
+                maxBarSize={40}
+              />
             </BarChart>
           </ResponsiveContainer>
         ) : null}
       </div>
-    </div>
+    </section>
   );
 }
