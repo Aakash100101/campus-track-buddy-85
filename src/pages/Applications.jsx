@@ -54,6 +54,9 @@ export default function Applications() {
       await deleteApplication(deleting.id);
       setDeleting(null);
       loadApplications();
+    } catch {
+      setDeleting(null);
+      setError("Could not delete that application. Please try again.");
     } finally {
       setDeleteLoading(false);
     }

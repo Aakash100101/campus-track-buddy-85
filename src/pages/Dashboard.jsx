@@ -22,8 +22,9 @@ export default function Dashboard() {
   const [studentName, setStudentName] = useState("Student");
 
   useEffect(() => {
-    const user = getCurrentUser();
-    if (user?.name) setStudentName(user.name);
+    getCurrentUser().then((user) => {
+      if (user?.name) setStudentName(user.name);
+    });
 
     getApplications()
       .then(setApplications)

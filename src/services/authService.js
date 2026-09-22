@@ -1,60 +1,71 @@
-// Mock authentication kept in one place.
-//
-// PHASE 4 (later): login()/register() will POST to FastAPI (/auth/login,
-// /auth/register), store the returned JWT and send it as an
-// `Authorization: Bearer <token>` header from applicationService.js.
-//
-// PHASE 5 (later): googleLogin() will connect to the FastAPI backend's
-// Google OAuth flow (e.g. redirect to /auth/google or exchange an
-// authorization code). It currently only provides a clear hook for that
-// future integration.
+// Real authentication backed by Lovable Cloud (email/password + Google).
+// All auth logic lives here so pages stay unchanged.
 
-const STORAGE_KEY = "campustrack.user";
+import { supabase } from "@/integrations/supabase/client";
+import { lovable } from "@/integrations/lovable/index";
 
-function isBrowser() {
-  return typeof window !== "undefined";
+function friendlyName(user) {
+  if (!user) return "Student";
+  const meta = user.user_metadata || {};
+  return meta.name || meta.full_name || (user.email ? user.email.split("@")[0] : "Student");
 }
 
-export function getCurrentUser() {
-  if (!isBrowser()) return null;
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : null;
-  } catch {
-    return null;
-  }
+// Returns the signed-in user (or null). Async because the session is verified
+// against the auth server.
+export async function getCurrentUser() {
+  const { data, error } = await supabase.auth.getUser();
+  if (error || !data?.user) return null;
+  return {
+    id: data.user.id,
+    email: data.user.email || "",
+    name: friendlyName(data.user),
+  };
 }
 
 export async function login({ email, password }) {
-  await new Promise((resolve) => setTimeout(resolve, 500));
-  if (!email || !password) {
-    throw new Error("Email and password are required.");
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  if (error) {
+    throw new Error(
+      error.message === "Invalid login credentials"
+        ? "Invalid email or password. Please try again."
+        : error.message,
+    );
   }
-  if (password.length < 6) {
-    throw new Error("Invalid email or password. Please try again.");
-  }
-  const name = email.split("@")[0].replace(/[._]/g, " ");
-  const user = { name: name.replace(/\b\w/g, (c) => c.toUpperCase()), email };
-  if (isBrowser()) window.localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
-  return user;
+  return { id: data.user.id, email: data.user.email, name: friendlyName(data.user) };
 }
 
-export async function register({ name, email }) {
-  await new Promise((resolve) => setTimeout(resolve, 500));
-  const user = { name, email };
-  if (isBrowser()) window.localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
-  return user;
+export async function register({ name, email, password }) {
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      data: { name },
+      emailRedirectTo: typeof window !== "undefined" ? window.location.origin : undefined,
+    },
+  });
+  if (error) {
+    throw new Error(
+      error.message.includes("already registered")
+        ? "An account with this email already exists. Please sign in."
+        : error.message,
+    );
+  }
+  return { needsConfirmation: !data.session };
 }
 
+// Real Google sign-in through the platform's secure OAuth flow.
+// No Google client secret is ever present in frontend code.
 export async function googleLogin() {
-  // This is a frontend integration point only. The real Google sign-in flow
-  // will be implemented on the FastAPI backend and connected here later.
-  await new Promise((resolve) => setTimeout(resolve, 300));
-  throw new Error(
-    "Google sign-in is not configured yet. Connect this function to the FastAPI backend's Google OAuth flow."
-  );
+  const result = await lovable.auth.signInWithOAuth("google", {
+    redirect_uri: typeof window !== "undefined" ? window.location.origin : undefined,
+  });
+  if (result.error) {
+    throw new Error(result.error.message || "Google sign-in failed. Please try again.");
+  }
+  // result.redirected === true means the browser is navigating to Google.
+  return result;
 }
 
-export function logout() {
-  if (isBrowser()) window.localStorage.removeItem(STORAGE_KEY);
+export async function logout() {
+  await supabase.auth.signOut();
 }
