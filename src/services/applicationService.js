@@ -1,91 +1,115 @@
-// Service layer for application data.
+// Service layer for application data — now backed by the Lovable Cloud database.
 //
-// PHASE 1 (current): the functions read and write a local copy of the mock data
-// that is persisted in localStorage.
-//
-// PHASE 5 (later): each function body is replaced with a fetch() call to the
-// FastAPI REST API, e.g.
-//   const res = await fetch(`${API_URL}/applications`);
-//   return res.json();
-// The page components never change, because they only talk to these functions.
+// Every query runs as the signed-in user, and row level security guarantees a
+// user can only ever read or write their own applications. The page components
+// were not changed: they still only call these functions.
 
-import { mockApplications } from "../data/applications";
+import { supabase } from "@/integrations/supabase/client";
 
-const STORAGE_KEY = "campustrack.applications";
-const DELAY = 250; // small delay so loading states are visible
-
-function wait(value) {
-  return new Promise((resolve) => setTimeout(() => resolve(value), DELAY));
+// DB row (snake_case) -> UI shape (camelCase)
+function toApplication(row) {
+  return {
+    id: row.id,
+    company: row.company,
+    role: row.role,
+    status: row.status,
+    applicationDate: row.application_date,
+    location: row.location || "",
+    notes: row.notes || "",
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
 }
 
-function isBrowser() {
-  return typeof window !== "undefined";
+// UI shape -> DB row, with basic validation.
+function toRow(data) {
+  const company = (data.company || "").trim();
+  const role = (data.role || "").trim();
+  if (!company) throw new Error("Company name is required.");
+  if (!role) throw new Error("Job role is required.");
+  return {
+    company,
+    role,
+    status: data.status || "Applied",
+    application_date: data.applicationDate || new Date().toISOString().slice(0, 10),
+    location: (data.location || "").trim(),
+    notes: (data.notes || "").trim(),
+  };
 }
 
-function readAll() {
-  if (!isBrowser()) return mockApplications;
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(mockApplications));
-      return mockApplications;
-    }
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : mockApplications;
-  } catch {
-    return mockApplications;
-  }
-}
-
-function writeAll(applications) {
-  if (!isBrowser()) return;
-  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(applications));
-}
-
-function nextId(applications) {
-  return applications.reduce((max, app) => Math.max(max, Number(app.id)), 0) + 1;
+async function requireUserId() {
+  const { data, error } = await supabase.auth.getUser();
+  if (error || !data?.user) throw new Error("You must be signed in to do that.");
+  return data.user.id;
 }
 
 export async function getApplications() {
-  const applications = readAll();
-  const sorted = [...applications].sort(
-    (a, b) => new Date(b.applicationDate) - new Date(a.applicationDate),
-  );
-  return wait(sorted);
+  const { data, error } = await supabase
+    .from("applications")
+    .select("*")
+    .order("application_date", { ascending: false })
+    .order("created_at", { ascending: false });
+  if (error) throw new Error(error.message);
+  return (data || []).map(toApplication);
 }
 
 export async function getApplicationById(id) {
-  const application = readAll().find((app) => String(app.id) === String(id));
-  if (!application) {
-    throw new Error("Application not found");
+  const { data, error } = await supabase
+    .from("applications")
+    .select("*")
+    .eq("id", id)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  if (!data) {
+    const notFound = new Error("Application not found");
+    notFound.status = 404;
+    throw notFound;
   }
-  return wait(application);
+  return toApplication(data);
 }
 
-export async function createApplication(data) {
-  const applications = readAll();
-  const application = { ...data, id: nextId(applications) };
-  writeAll([...applications, application]);
-  return wait(application);
+export async function createApplication(values) {
+  // user_id always comes from the authenticated session, never from the UI.
+  const userId = await requireUserId();
+  const { data, error } = await supabase
+    .from("applications")
+    .insert({ ...toRow(values), user_id: userId })
+    .select("*")
+    .single();
+  if (error) throw new Error(error.message);
+  return toApplication(data);
 }
 
-export async function updateApplication(id, data) {
-  const applications = readAll();
-  const index = applications.findIndex((app) => String(app.id) === String(id));
-  if (index === -1) {
-    throw new Error("Application not found");
+export async function updateApplication(id, values) {
+  const { data, error } = await supabase
+    .from("applications")
+    .update(toRow(values))
+    .eq("id", id)
+    .select("*")
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  if (!data) {
+    const notFound = new Error("Application not found");
+    notFound.status = 404;
+    throw notFound;
   }
-  const updated = { ...applications[index], ...data, id: applications[index].id };
-  const next = [...applications];
-  next[index] = updated;
-  writeAll(next);
-  return wait(updated);
+  return toApplication(data);
 }
 
 export async function deleteApplication(id) {
-  const applications = readAll();
-  writeAll(applications.filter((app) => String(app.id) !== String(id)));
-  return wait(true);
+  const { data, error } = await supabase
+    .from("applications")
+    .delete()
+    .eq("id", id)
+    .select("id")
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  if (!data) {
+    const notFound = new Error("Application not found");
+    notFound.status = 404;
+    throw notFound;
+  }
+  return true;
 }
 
 // Small helper used by the dashboard so the stats logic lives outside the UI.
