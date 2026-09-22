@@ -4,7 +4,9 @@ import { login, googleLogin } from "../services/authService";
 import GoogleSignInButton from "../components/GoogleSignInButton";
 
 const inputClass =
-  "w-full rounded-md border border-input bg-card px-3 py-2 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-ring";
+  "h-10 w-full rounded-lg border border-input bg-card px-3 text-sm text-foreground outline-none transition-colors duration-150 placeholder:text-muted-foreground/70 focus:border-primary focus:ring-2 focus:ring-ring/20";
+
+const labelClass = "mb-1.5 block text-xs font-medium text-muted-foreground";
 
 function Divider() {
   return (
@@ -13,7 +15,7 @@ function Divider() {
         <span className="w-full border-t border-border" />
       </div>
       <div className="relative flex justify-center">
-        <span className="bg-card px-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+        <span className="bg-card px-2 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
           OR
         </span>
       </div>
@@ -66,16 +68,16 @@ export default function Login() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4 py-10">
-      <div className="w-full max-w-sm">
-        <div className="mb-6 flex items-center gap-2">
-          <span className="grid size-7 place-items-center rounded-md bg-primary text-xs font-bold text-primary-foreground">
+    <div className="flex min-h-screen items-center justify-center bg-background px-4 py-12">
+      <div className="w-full max-w-[380px]">
+        <div className="mb-6 flex items-center justify-center gap-2">
+          <span className="grid size-6 place-items-center rounded-md bg-primary text-[10px] font-bold text-primary-foreground">
             CT
           </span>
           <span className="text-sm font-semibold tracking-tight text-foreground">CampusTrack</span>
         </div>
 
-        <div className="rounded-lg border border-border bg-card p-6">
+        <div className="rounded-xl border border-border bg-card p-6 shadow-[0_1px_2px_rgba(16,24,40,0.04)]">
           <h1 className="text-lg font-semibold tracking-tight text-foreground">Sign in</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             Track your placement applications in one place.
@@ -83,7 +85,7 @@ export default function Login() {
 
           <form onSubmit={handleSubmit} className="mt-6 space-y-4">
             <div>
-              <label htmlFor="email" className="mb-1.5 block text-sm font-medium text-foreground">
+              <label htmlFor="email" className={labelClass}>
                 Email
               </label>
               <input
@@ -96,10 +98,7 @@ export default function Login() {
               />
             </div>
             <div>
-              <label
-                htmlFor="password"
-                className="mb-1.5 block text-sm font-medium text-foreground"
-              >
+              <label htmlFor="password" className={labelClass}>
                 Password
               </label>
               <input
@@ -113,7 +112,7 @@ export default function Login() {
             </div>
 
             {error ? (
-              <p className="rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive">
+              <p className="rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive">
                 {error}
               </p>
             ) : null}
@@ -121,7 +120,7 @@ export default function Login() {
             <button
               type="submit"
               disabled={loading || googleLoading}
-              className="w-full rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-60"
+              className="h-10 w-full rounded-lg bg-primary px-3 text-sm font-medium text-primary-foreground transition-colors duration-150 hover:bg-primary/90 disabled:opacity-60"
             >
               {loading ? "Signing in..." : "Login"}
             </button>
@@ -134,17 +133,13 @@ export default function Login() {
             loading={googleLoading}
             disabled={loading}
           />
-
-          <Link
-            to="/register"
-            className="mt-4 block w-full rounded-md border border-border bg-card px-3 py-2 text-center text-sm font-medium text-foreground transition-colors hover:bg-secondary"
-          >
-            Register
-          </Link>
         </div>
 
-        <p className="mt-4 text-center text-xs text-muted-foreground">
-          Your applications are saved to your account.
+        <p className="mt-5 text-center text-sm text-muted-foreground">
+          Don&apos;t have an account?{" "}
+          <Link to="/register" className="font-medium text-primary hover:underline">
+            Register
+          </Link>
         </p>
       </div>
     </div>
