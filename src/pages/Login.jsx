@@ -36,6 +36,34 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
 
+  // Finish any OAuth redirect (tokens in the URL hash) and send signed-in
+  // users straight to the dashboard. Also covers a plain visit to /login
+  // while already authenticated.
+  useEffect(() => {
+    let cancelled = false;
+
+    completeOAuthFromUrl()
+      .then((session) => {
+        if (!cancelled && session) navigate({ to: "/dashboard", replace: true });
+      })
+      .catch((err) => {
+        if (!cancelled) setError(err.message);
+      });
+
+    const unsubscribe = onAuthStateChange((event, session) => {
+      if (cancelled) return;
+      if ((event === "SIGNED_IN" || event === "INITIAL_SESSION") && session) {
+        navigate({ to: "/dashboard", replace: true });
+      }
+    });
+
+    return () => {
+      cancelled = true;
+      unsubscribe();
+    };
+  }, [navigate]);
+
+
   async function handleSubmit(event) {
     event.preventDefault();
     if (!email.trim() || !password) {
