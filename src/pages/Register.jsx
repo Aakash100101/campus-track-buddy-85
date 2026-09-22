@@ -54,10 +54,18 @@ export default function Register() {
     setError("");
     setLoading(true);
     try {
-      await register({ name: form.name.trim(), email: form.email.trim() });
+      const result = await register({
+        name: form.name.trim(),
+        email: form.email.trim(),
+        password: form.password,
+      });
+      if (result?.needsConfirmation) {
+        setError("Check your email to confirm your account, then sign in.");
+        return;
+      }
       navigate({ to: "/dashboard" });
-    } catch {
-      setError("Could not create your account. Please try again.");
+    } catch (err) {
+      setError(err.message || "Could not create your account. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -67,7 +75,9 @@ export default function Register() {
     setError("");
     setGoogleLoading(true);
     try {
-      await googleLogin();
+      const result = await googleLogin();
+      if (result?.redirected) return;
+      navigate({ to: "/dashboard" });
     } catch (err) {
       setError(err.message);
     } finally {

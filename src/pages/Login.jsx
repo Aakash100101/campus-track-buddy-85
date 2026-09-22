@@ -55,7 +55,9 @@ export default function Login() {
     setError("");
     setGoogleLoading(true);
     try {
-      await googleLogin();
+      const result = await googleLogin();
+      if (result?.redirected) return; // browser is navigating to Google
+      navigate({ to: "/dashboard" });
     } catch (err) {
       setError(err.message);
     } finally {
@@ -142,7 +144,7 @@ export default function Login() {
         </div>
 
         <p className="mt-4 text-center text-xs text-muted-foreground">
-          Demo sign-in: any email with a password of 6+ characters.
+          Your applications are saved to your account.
         </p>
       </div>
     </div>
