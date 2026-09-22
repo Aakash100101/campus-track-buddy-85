@@ -2,7 +2,9 @@ import { useState } from "react";
 import { STATUSES } from "../data/applications";
 
 const inputClass =
-  "w-full rounded-md border border-input bg-card px-3 py-2 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-ring";
+  "h-10 w-full rounded-lg border border-input bg-card px-3 text-sm text-foreground outline-none transition-colors duration-150 placeholder:text-muted-foreground/70 focus:border-primary focus:ring-2 focus:ring-ring/20";
+
+const labelClass = "mb-1.5 block text-xs font-medium text-muted-foreground";
 
 const emptyForm = {
   company: "",
@@ -57,10 +59,10 @@ export default function ApplicationForm({ open, initialValues, onCancel, onSubmi
     <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-foreground/25 p-4 sm:items-center">
       <form
         onSubmit={handleSubmit}
-        className="w-full max-w-lg rounded-lg border border-border bg-card shadow-sm"
+        className="w-full max-w-lg rounded-xl border border-border bg-card shadow-[0_16px_40px_rgba(16,24,40,0.14)]"
       >
         <div className="border-b border-border px-5 py-4">
-          <h2 className="text-base font-semibold text-foreground">
+          <h2 className="text-base font-semibold tracking-tight text-foreground">
             {isEdit ? "Edit application" : "Add application"}
           </h2>
           <p className="mt-0.5 text-sm text-muted-foreground">
@@ -72,7 +74,7 @@ export default function ApplicationForm({ open, initialValues, onCancel, onSubmi
 
         <div className="grid gap-4 px-5 py-5 sm:grid-cols-2">
           <div className="sm:col-span-1">
-            <label htmlFor="company" className="mb-1.5 block text-sm font-medium text-foreground">
+            <label htmlFor="company" className={labelClass}>
               Company name
             </label>
             <input
@@ -85,7 +87,7 @@ export default function ApplicationForm({ open, initialValues, onCancel, onSubmi
             />
           </div>
           <div className="sm:col-span-1">
-            <label htmlFor="role" className="mb-1.5 block text-sm font-medium text-foreground">
+            <label htmlFor="role" className={labelClass}>
               Job role
             </label>
             <input
@@ -98,7 +100,7 @@ export default function ApplicationForm({ open, initialValues, onCancel, onSubmi
             />
           </div>
           <div>
-            <label htmlFor="status" className="mb-1.5 block text-sm font-medium text-foreground">
+            <label htmlFor="status" className={labelClass}>
               Status
             </label>
             <select
@@ -116,10 +118,7 @@ export default function ApplicationForm({ open, initialValues, onCancel, onSubmi
             </select>
           </div>
           <div>
-            <label
-              htmlFor="applicationDate"
-              className="mb-1.5 block text-sm font-medium text-foreground"
-            >
+            <label htmlFor="applicationDate" className={labelClass}>
               Application date
             </label>
             <input
@@ -132,7 +131,7 @@ export default function ApplicationForm({ open, initialValues, onCancel, onSubmi
             />
           </div>
           <div className="sm:col-span-2">
-            <label htmlFor="location" className="mb-1.5 block text-sm font-medium text-foreground">
+            <label htmlFor="location" className={labelClass}>
               Location
             </label>
             <input
@@ -145,7 +144,7 @@ export default function ApplicationForm({ open, initialValues, onCancel, onSubmi
             />
           </div>
           <div className="sm:col-span-2">
-            <label htmlFor="notes" className="mb-1.5 block text-sm font-medium text-foreground">
+            <label htmlFor="notes" className={labelClass}>
               Notes
             </label>
             <textarea
@@ -155,29 +154,29 @@ export default function ApplicationForm({ open, initialValues, onCancel, onSubmi
               value={values.notes}
               onChange={handleChange}
               placeholder="Round details, contacts, next steps..."
-              className={inputClass}
+              className={`${inputClass} h-auto py-2.5`}
             />
           </div>
 
           {error ? (
-            <p className="sm:col-span-2 rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive">
+            <p className="sm:col-span-2 rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive">
               {error}
             </p>
           ) : null}
         </div>
 
-        <div className="flex justify-end gap-2 border-t border-border px-5 py-4">
+        <div className="flex justify-end gap-2 border-t border-border px-5 py-3.5">
           <button
             type="button"
             onClick={onCancel}
-            className="rounded-md border border-border bg-card px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
+            className="h-9 rounded-lg border border-border bg-card px-3 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
           >
             Cancel
           </button>
           <button
             type="submit"
             disabled={saving}
-            className="rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-60"
+            className="h-9 rounded-lg bg-primary px-3.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-60"
           >
             {saving ? "Saving..." : isEdit ? "Save changes" : "Add application"}
           </button>
