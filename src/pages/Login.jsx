@@ -1,9 +1,25 @@
 import { useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { login } from "../services/authService";
+import { login, googleLogin } from "../services/authService";
+import GoogleSignInButton from "../components/GoogleSignInButton";
 
 const inputClass =
   "w-full rounded-md border border-input bg-card px-3 py-2 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-ring";
+
+function Divider() {
+  return (
+    <div className="relative my-5">
+      <div className="absolute inset-0 flex items-center">
+        <span className="w-full border-t border-border" />
+      </div>
+      <div className="relative flex justify-center">
+        <span className="bg-card px-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+          OR
+        </span>
+      </div>
+    </div>
+  );
+}
 
 export default function Login() {
   const navigate = useNavigate();
@@ -11,6 +27,7 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
 
   async function handleSubmit(event) {
     event.preventDefault();
@@ -31,6 +48,18 @@ export default function Login() {
       setError(err.message);
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function handleGoogleSignIn() {
+    setError("");
+    setGoogleLoading(true);
+    try {
+      await googleLogin();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setGoogleLoading(false);
     }
   }
 
@@ -65,7 +94,10 @@ export default function Login() {
               />
             </div>
             <div>
-              <label htmlFor="password" className="mb-1.5 block text-sm font-medium text-foreground">
+              <label
+                htmlFor="password"
+                className="mb-1.5 block text-sm font-medium text-foreground"
+              >
                 Password
               </label>
               <input
@@ -86,18 +118,27 @@ export default function Login() {
 
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || googleLoading}
               className="w-full rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-60"
             >
               {loading ? "Signing in..." : "Login"}
             </button>
-            <Link
-              to="/register"
-              className="block w-full rounded-md border border-border bg-card px-3 py-2 text-center text-sm font-medium text-foreground transition-colors hover:bg-secondary"
-            >
-              Register
-            </Link>
           </form>
+
+          <Divider />
+
+          <GoogleSignInButton
+            onClick={handleGoogleSignIn}
+            loading={googleLoading}
+            disabled={loading}
+          />
+
+          <Link
+            to="/register"
+            className="mt-4 block w-full rounded-md border border-border bg-card px-3 py-2 text-center text-sm font-medium text-foreground transition-colors hover:bg-secondary"
+          >
+            Register
+          </Link>
         </div>
 
         <p className="mt-4 text-center text-xs text-muted-foreground">
