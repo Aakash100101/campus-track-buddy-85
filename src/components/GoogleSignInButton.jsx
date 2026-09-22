@@ -1,9 +1,9 @@
-export default function GoogleSignInButton({ onClick, loading, className = "" }) {
+export default function GoogleSignInButton({ onClick, loading, disabled, className = "" }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      disabled={loading}
+      disabled={loading || disabled}
       className={[
         "inline-flex w-full items-center justify-center gap-2 rounded-md border border-border",
         "bg-white px-3 py-2 text-sm font-medium text-foreground transition-colors",
