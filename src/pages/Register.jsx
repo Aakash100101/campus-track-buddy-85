@@ -187,6 +187,24 @@ export default function Register() {
                 onChange={handleChange}
                 className={inputClass}
               />
+              {form.password ? (
+                <div className="mt-2">
+                  <div className="h-1 w-full overflow-hidden rounded-full bg-secondary">
+                    <div
+                      className={`h-full rounded-full transition-all duration-200 ${strengthStyles[strength.tone].bar}`}
+                      style={{ width: `${strength.percent}%` }}
+                    />
+                  </div>
+                  <p
+                    className={`mt-1.5 text-[11px] font-medium ${strengthStyles[strength.tone].text}`}
+                  >
+                    {strength.label} password
+                    {strength.score <= 1
+                      ? ` — use at least ${MIN_PASSWORD_LENGTH} characters with mixed case and a number`
+                      : ""}
+                  </p>
+                </div>
+              ) : null}
             </div>
             <div>
               <label htmlFor="confirmPassword" className={labelClass}>
