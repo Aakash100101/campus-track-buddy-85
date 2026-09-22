@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { LayoutDashboard, Briefcase, LogOut, X } from "lucide-react";
 import { getCurrentUser, logout } from "../services/authService";
@@ -32,11 +33,15 @@ function NavLinks({ onNavigate }) {
 
 function SidebarContent({ onNavigate, onClose }) {
   const navigate = useNavigate();
-  const user = getCurrentUser();
+  const [user, setUser] = useState(null);
 
-  function handleLogout() {
-    logout();
-    navigate({ to: "/login" });
+  useEffect(() => {
+    getCurrentUser().then(setUser);
+  }, []);
+
+  async function handleLogout() {
+    await logout();
+    navigate({ to: "/login", replace: true });
   }
 
   return (
