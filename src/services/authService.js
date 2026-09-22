@@ -36,15 +36,19 @@ export async function login({ email, password }) {
 
 function registerErrorMessage(error) {
   const text = error?.message || "";
+  const weakReasons = Array.isArray(error?.reasons) ? error.reasons : [];
   if (/already registered|already exists|User already/i.test(text)) {
     return "An account with this email already exists. Please sign in.";
   }
-  if (
-    error?.code === "weak_password" ||
-    error?.name === "AuthWeakPasswordError" ||
-    /pwned|known to be weak|easy to guess|compromised/i.test(text)
-  ) {
+  if (weakReasons.includes("pwned") || /pwned|known to be weak|easy to guess|compromised/i.test(text)) {
     return "This password has appeared in known data breaches. Please choose a different, stronger password.";
+  }
+  if (error?.code === "weak_password" || error?.name === "AuthWeakPasswordError") {
+    if (weakReasons.includes("length")) return "This password is too short for the account security policy.";
+    if (weakReasons.includes("characters")) {
+      return "This password does not contain the character types required by the account security policy.";
+    }
+    return text || "This password does not meet the account security policy.";
   }
   if (/at least|too short|length/i.test(text)) {
     return text;
