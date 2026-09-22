@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import Applications from "../pages/Applications";
+import Applications from "../../pages/Applications";
 
 export const Route = createFileRoute("/_authenticated/applications/")({
   head: () => ({
