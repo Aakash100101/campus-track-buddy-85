@@ -1,7 +1,21 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { register, googleLogin } from "../services/authService";
+import {
+  register,
+  googleLogin,
+  completeOAuthFromUrl,
+  onAuthStateChange,
+} from "../services/authService";
 import GoogleSignInButton from "../components/GoogleSignInButton";
+import { getPasswordStrength, MIN_PASSWORD_LENGTH } from "../lib/password";
+
+const strengthStyles = {
+  weak: { bar: "bg-destructive", text: "text-destructive" },
+  fair: { bar: "bg-amber-500", text: "text-amber-600" },
+  good: { bar: "bg-primary/70", text: "text-primary" },
+  strong: { bar: "bg-primary", text: "text-primary" },
+  muted: { bar: "bg-border", text: "text-muted-foreground" },
+};
 
 const inputClass =
   "h-10 w-full rounded-lg border border-input bg-card px-3 text-sm text-foreground outline-none transition-colors duration-150 placeholder:text-muted-foreground/70 focus:border-primary focus:ring-2 focus:ring-ring/20";
