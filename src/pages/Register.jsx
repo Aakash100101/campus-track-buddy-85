@@ -1,15 +1,32 @@
 import { useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { register } from "../services/authService";
+import { register, googleLogin } from "../services/authService";
+import GoogleSignInButton from "../components/GoogleSignInButton";
 
 const inputClass =
   "w-full rounded-md border border-input bg-card px-3 py-2 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-ring";
+
+function Divider() {
+  return (
+    <div className="relative my-5">
+      <div className="absolute inset-0 flex items-center">
+        <span className="w-full border-t border-border" />
+      </div>
+      <div className="relative flex justify-center">
+        <span className="bg-card px-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+          OR
+        </span>
+      </div>
+    </div>
+  );
+}
 
 export default function Register() {
   const navigate = useNavigate();
   const [form, setForm] = useState({ name: "", email: "", password: "", confirmPassword: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
 
   function handleChange(event) {
     const { name, value } = event.target;
@@ -43,6 +60,18 @@ export default function Register() {
       setError("Could not create your account. Please try again.");
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function handleGoogleSignIn() {
+    setError("");
+    setGoogleLoading(true);
+    try {
+      await googleLogin();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setGoogleLoading(false);
     }
   }
 
@@ -91,7 +120,10 @@ export default function Register() {
               />
             </div>
             <div>
-              <label htmlFor="password" className="mb-1.5 block text-sm font-medium text-foreground">
+              <label
+                htmlFor="password"
+                className="mb-1.5 block text-sm font-medium text-foreground"
+              >
                 Password
               </label>
               <input
@@ -128,12 +160,20 @@ export default function Register() {
 
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || googleLoading}
               className="w-full rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-60"
             >
               {loading ? "Creating account..." : "Create account"}
             </button>
           </form>
+
+          <Divider />
+
+          <GoogleSignInButton
+            onClick={handleGoogleSignIn}
+            loading={googleLoading}
+            disabled={loading}
+          />
 
           <p className="mt-4 text-center text-sm text-muted-foreground">
             Already have an account?{" "}
