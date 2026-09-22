@@ -89,10 +89,6 @@ export default function Register() {
       setError(`Password must be at least ${MIN_PASSWORD_LENGTH} characters.`);
       return;
     }
-    if (strength.score <= 1) {
-      setError("Please choose a stronger password — mix upper and lower case, numbers or symbols.");
-      return;
-    }
     if (form.password !== form.confirmPassword) {
       setError("Passwords do not match.");
       return;

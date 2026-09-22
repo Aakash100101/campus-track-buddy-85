@@ -34,13 +34,21 @@ export async function login({ email, password }) {
   return { id: data.user.id, email: data.user.email, name: friendlyName(data.user) };
 }
 
-function registerErrorMessage(message) {
-  const text = message || "";
+function registerErrorMessage(error) {
+  const text = error?.message || "";
+  const weakReasons = Array.isArray(error?.reasons) ? error.reasons : [];
   if (/already registered|already exists|User already/i.test(text)) {
     return "An account with this email already exists. Please sign in.";
   }
-  if (/pwned|known to be weak|easy to guess|compromised/i.test(text)) {
+  if (weakReasons.includes("pwned") || /pwned|known to be weak|easy to guess|compromised/i.test(text)) {
     return "This password has appeared in known data breaches. Please choose a different, stronger password.";
+  }
+  if (error?.code === "weak_password" || error?.name === "AuthWeakPasswordError") {
+    if (weakReasons.includes("length")) return "This password is too short for the account security policy.";
+    if (weakReasons.includes("characters")) {
+      return "This password does not contain the character types required by the account security policy.";
+    }
+    return text || "This password does not meet the account security policy.";
   }
   if (/at least|too short|length/i.test(text)) {
     return text;
@@ -61,7 +69,7 @@ export async function register({ name, email, password }) {
     },
   });
   if (error) {
-    throw new Error(registerErrorMessage(error.message));
+    throw new Error(registerErrorMessage(error));
   }
   // Supabase returns a user with an empty identities array when the email is
   // already taken but confirmation is pending — surface that clearly.
@@ -75,7 +83,13 @@ export async function register({ name, email, password }) {
 // No Google client secret is ever present in frontend code.
 export async function googleLogin() {
   const result = await lovable.auth.signInWithOAuth("google", {
-    redirect_uri: typeof window !== "undefined" ? window.location.origin : undefined,
+    // The callback must land on the route that consumes the OAuth hash. The
+    // root route redirects to /login and a router redirect does not preserve
+    // URL fragments, so returning to the bare origin can discard the tokens.
+    redirect_uri:
+      typeof window !== "undefined"
+        ? new URL("/login", window.location.origin).toString()
+        : undefined,
   });
   if (result.error) {
     throw new Error(result.error.message || "Google sign-in failed. Please try again.");
@@ -108,20 +122,36 @@ export function onAuthStateChange(callback) {
 export async function completeOAuthFromUrl() {
   if (typeof window === "undefined") return null;
   const hash = window.location.hash || "";
-  if (!hash.includes("access_token") && !hash.includes("error_description")) {
+  const params = new URLSearchParams(hash.replace(/^#/, ""));
+  const oauthError = params.get("error_description") || params.get("error");
+
+  if (oauthError) {
+    window.history.replaceState(null, "", window.location.pathname + window.location.search);
+    throw new Error(decodeURIComponent(oauthError.replace(/\+/g, " ")));
+  }
+
+  if (!params.has("access_token")) {
     const { data } = await supabase.auth.getSession();
     return data?.session ?? null;
   }
 
-  const params = new URLSearchParams(hash.replace(/^#/, ""));
   const accessToken = params.get("access_token");
   const refreshToken = params.get("refresh_token");
 
-  let session = null;
-  const existing = await supabase.auth.getSession();
-  session = existing.data?.session ?? null;
+  if (!accessToken || !refreshToken) {
+    throw new Error("Google sign-in returned an incomplete session. Please try again.");
+  }
 
-  if (!session && accessToken && refreshToken) {
+  let session;
+  const existing = await supabase.auth.getSession();
+  const existingSession = existing.data?.session ?? null;
+
+  if (
+    existingSession?.access_token === accessToken &&
+    existingSession?.refresh_token === refreshToken
+  ) {
+    session = existingSession;
+  } else {
     const { data, error } = await supabase.auth.setSession({
       access_token: accessToken,
       refresh_token: refreshToken,
@@ -130,13 +160,7 @@ export async function completeOAuthFromUrl() {
     session = data?.session ?? null;
   }
 
-  if (session) {
-    // Strip the tokens from the URL without adding a history entry.
-    window.history.replaceState(
-      null,
-      "",
-      window.location.pathname + window.location.search,
-    );
-  }
+  // Strip the tokens only after the session is safely persisted.
+  window.history.replaceState(null, "", window.location.pathname + window.location.search);
   return session;
 }
