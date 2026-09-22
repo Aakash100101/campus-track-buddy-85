@@ -85,8 +85,12 @@ export default function Register() {
       setError("Please enter a valid email address.");
       return;
     }
-    if (form.password.length < 6) {
-      setError("Password must be at least 6 characters.");
+    if (form.password.length < MIN_PASSWORD_LENGTH) {
+      setError(`Password must be at least ${MIN_PASSWORD_LENGTH} characters.`);
+      return;
+    }
+    if (strength.score <= 1) {
+      setError("Please choose a stronger password — mix upper and lower case, numbers or symbols.");
       return;
     }
     if (form.password !== form.confirmPassword) {
