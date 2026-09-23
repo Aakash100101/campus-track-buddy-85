@@ -1,805 +1,440 @@
-# Campus Track
+# CampusTrack
 
-Build a modern, professional portfolio project called CampusTrack — Placement Application Tracker.
+> A placement application tracker that helps students manage job applications and monitor recruitment progress in one place.
 
-Project Goal
+CampusTrack is a full-stack web application designed for college students to organize and track their placement and job applications. The application provides authentication, application management, search and filtering, recruitment status tracking, and a dashboard with placement statistics.
 
-CampusTrack is a simple web application that helps college students manage and track their placement/job applications.
+---
 
-The application should solve one clear problem:
+## 🎯 Project Goal
 
-"Help students keep track of their placement applications and recruitment progress in one place."
+CampusTrack solves one clear problem:
 
-This is a portfolio project for a software engineering student.
+> **Help students keep track of their placement applications and recruitment progress in one place.**
 
-IMPORTANT:
-Keep the project simple, practical, and easy to understand and explain during an interview.
+Students can maintain their placement applications, update recruitment stages, search and filter applications, and view an overview of their placement progress through the dashboard.
 
-Do not add unnecessary features.
+The project is intentionally kept practical and focused so that the major features and technical decisions can be understood and explained during technical interviews.
 
-TECHNOLOGY REQUIREMENTS
+---
 
-Use ONLY the following technologies.
+## ✨ Features
 
-Frontend
+### 🔐 Authentication
 
-React.js
+- Email and password registration
+- Email and password login
+- Google OAuth login
+- Persistent authentication sessions
+- Logout functionality
+- Protected application routes
+- Authentication error handling
+- Password security validation
 
-JavaScript
+### 📋 Application Management
 
-HTML
+Users can:
 
-CSS / Tailwind CSS
+- Add new placement applications
+- View application details
+- Edit existing applications
+- Delete applications
+- Search applications
+- Filter applications by status
 
-React Router
+Each application contains:
 
-Recharts
+- Company
+- Job Role
+- Status
+- Application Date
+- Location
+- Notes
 
-Backend — later phase
+### 📊 Dashboard
 
-Python
+The dashboard provides an overview of placement activity:
 
-FastAPI
+- Total Applications
+- Assessments
+- Interviews
+- Selected applications
+- Applications by status
+- Recent applications
 
-Database — later phase
+A Recharts visualization displays applications across the different recruitment stages.
 
-MySQL
+### 🔎 Search & Filtering
 
-SQLAlchemy ORM
+Users can:
 
-Authentication — later phase
+- Search applications by company
+- Filter applications by recruitment status
+- Combine application management with status tracking
 
-JWT
+### 📱 Responsive UI
 
-Tools
+The interface is designed to work across:
 
-Git
+- Desktop
+- Tablet
+- Mobile
 
-GitHub
+---
 
-IMPORTANT:
+## 🏷️ Application Status
 
-Do NOT use:
+CampusTrack uses five recruitment statuses:
 
-TypeScript
+| Status | Description |
+|---|---|
+| Applied | Application has been submitted |
+| Assessment | Candidate is in an assessment stage |
+| Interview | Candidate is in an interview stage |
+| Selected | Candidate has been selected |
+| Rejected | Application was rejected |
 
-Next.js
+---
 
-Redux
+## 🛠️ Tech Stack
 
+### Frontend
+
+- React
+- TypeScript
+- Tailwind CSS
+- TanStack Router
+- Recharts
+- Vite
+
+### Backend / Cloud
+
+- Supabase
+- Lovable Cloud
+
+### Database
+
+- PostgreSQL
+
+### Authentication
+
+- Supabase Authentication
+- Email & Password
+- Google OAuth
+
+### Development Tools
+
+- Git
+- GitHub
+- npm
+- VS Code
+
+---
+
+## 🏗️ Architecture
+
+```text
+                    CampusTrack
+                         │
+                         ▼
+               React + TypeScript
+                         │
+              ┌──────────┴──────────┐
+              │                     │
+              ▼                     ▼
+        Supabase Auth       Supabase Database
+              │                     │
+              │                     ▼
+              │                 PostgreSQL
+              │
+              ├── Email / Password
+              │
+              └── Google OAuth
+
+
+
+---
+
+## 🔄 Application Flow
+
+```text
+User
+ │
+ ▼
+Login / Register
+ │
+ ├── Email & Password
+ │
+ └── Google OAuth
+ │
+ ▼
+Authenticated Session
+ │
+ ▼
+Dashboard
+ │
+ ├── View Statistics
+ ├── View Recent Applications
+ └── Track Recruitment Progress
+ │
+ ▼
+Applications
+ │
+ ├── Add
+ ├── Search
+ ├── Filter
+ ├── View
+ ├── Edit
+ └── Delete
+ │
+ ▼
+Supabase
+ │
+ ▼
 PostgreSQL
 
-Prisma
+---
 
-Firebase
+## 🔐 Authentication
 
-Supabase
+CampusTrack uses Supabase Authentication for managing user accounts and sessions.
 
-GraphQL
+### Email & Password
 
-Docker
+Users can:
 
-Any unnecessary framework or library
+- Create an account
+- Sign in
+- Sign out
+- Maintain a persistent session
 
-Use plain JavaScript for React.
+The registration flow also handles:
 
-DEVELOPMENT APPROACH
+- Duplicate email accounts
+- Weak or breached passwords
+- Password security errors
+- Authentication failures
 
-For this phase, build ONLY the frontend.
+### Google OAuth
 
-Do NOT create the FastAPI backend yet.
+Users can also sign in using Google.
 
-Do NOT create the MySQL database yet.
+Google authentication is handled through the managed OAuth integration, keeping sensitive OAuth credentials out of frontend code.
 
-Do NOT implement JWT yet.
+The OAuth callback is handled through the login flow and the authenticated session is persisted.
 
-However, structure the frontend so that the FastAPI backend can be connected later without rewriting the UI.
+---
 
-We will build the backend and database in later phases.
+## 📊 Dashboard
 
-DESIGN DIRECTION
+The dashboard provides a quick overview of the user's placement progress.
 
-The UI must look like a modern professional productivity/SaaS application.
+### Statistics
 
-Design inspiration can come from products such as:
+The dashboard displays:
 
-Linear
+- Total Applications
+- Assessments
+- Interviews
+- Selected Applications
 
-Notion
+Applications can also be grouped by their recruitment status.
 
-GitHub
+### Application Status Chart
 
-But do NOT copy their designs.
+A Recharts visualization displays:
 
-The interface should look like a real developer-built product, not an AI-generated template.
+- Applied
+- Assessment
+- Interview
+- Selected
+- Rejected
 
-Use
+The chart is generated from application data.
 
-Clean light background
+### Recent Applications
 
-White content surfaces
+The dashboard displays recent applications with information such as:
 
-Dark charcoal text
+- Company
+- Role
+- Status
+- Application Date
 
-One restrained accent color
+Users can navigate to the complete applications page from the dashboard.
 
-Thin borders
+---
 
-Minimal shadows
+## 📋 Application Management
 
-Clear typography hierarchy
+### Add Application
 
-Professional tables
+Users can add a new placement application.
 
-Compact sidebar
+The application form contains:
 
-Small status badges
+- Company Name
+- Job Role
+- Status
+- Application Date
+- Location
+- Notes
 
-Good whitespace
+Example:
 
-Subtle hover effects
+```text
+Company: Infosys
+Role: Systems Engineer
+Status: Applied
+Application Date: 2026-09-20
+Location: Pune
+Notes: Campus placement application
 
-Simple transitions
+---
 
-DO NOT USE
+## 🔎 Search
 
-Purple/blue AI gradients
+The applications page provides a search field for finding applications by company name.
 
-Neon colors
-
-Glowing cards
-
-Glassmorphism
-
-Gradient text
-
-Excessive rounded cards
-
-Excessive shadows
-
-AI illustrations
-
-Robot/chatbot graphics
-
-Excessive animations
-
-Huge dashboard cards
-
-Generic AI SaaS visual style
-
-Keep the visual design clean, minimal, and professional.
-
-APPLICATION ROUTES
-
-Create these routes:
-
-/login
-
-/register
-
-/dashboard
-
-/applications
-
-/applications/:id
-
-1. LOGIN PAGE
-
-Create a simple professional login page.
-
-Fields:
-
-Email
-
-Password
-
-Buttons:
-
-Login
-
-Register
-
-Include:
-
-Basic form validation
-
-Error message area
-
-Loading state
-
-For now, authentication can use simple mock frontend behavior.
-
-Keep authentication logic separated because JWT authentication will later be implemented through FastAPI.
-
-2. REGISTER PAGE
-
-Create a registration page.
-
-Fields:
-
-Full Name
-
-Email
-
-Password
-
-Confirm Password
-
-Include:
-
-Basic validation
-
-Password confirmation validation
-
-Loading state
-
-Error state
-
-Add a link back to Login.
-
-3. DASHBOARD
-
-Create a clean placement dashboard.
-
-Header:
-
-Good morning, [Student Name]
-
-Subtitle:
-
-Here's an overview of your placement applications.
-
-Create four compact statistic cards:
-
-Total Applications
-
-Number of all applications.
-
-Assessments
-
-Number of applications currently in Assessment stage.
-
-Interviews
-
-Number of applications currently in Interview stage.
-
-Selected
-
-Number of selected applications.
-
-Do NOT make these cards oversized.
-
-Application Status Chart
-
-Create one simple Recharts chart.
-
-Title:
-
-Applications by Status
-
-Show:
-
-Applied
-
-Assessment
-
-Interview
-
-Selected
-
-Rejected
-
-The chart should be based on application data.
-
-Do not create complicated analytics.
-
-Recent Applications
-
-Create a clean table showing recent applications.
-
-Columns:
-
-Company
-
-Role
-
-Status
-
-Application Date
-
-Add a "View all" link/button that navigates to /applications.
-
-4. APPLICATIONS PAGE
-
-Create a professional application management page.
-
-Header:
-
-Applications
-
-Subtitle:
-
-Track and manage your placement applications.
-
-Top-right button:
-
-+ Add Application
-
-Search
-
-Add a search input:
-
+```text
 Search companies...
 
-Search should filter applications by company name.
+---
 
-Status Filter
+## 📄 Application Details
 
-Add a dropdown/filter:
+Each application can be opened through:
 
-All
-
-Applied
-
-Assessment
-
-Interview
-
-Selected
-
-Rejected
-
-Applications Table
-
-Columns:
-
-Company
-
-Job Role
-
-Status
-
-Application Date
-
-Location
-
-Actions
-
-Actions:
-
-View
-
-Edit
-
-Delete
-
-Use small professional status badges.
-
-5. ADD APPLICATION
-
-When the user clicks:
-
-+ Add Application
-
-open a clean modal/dialog.
-
-Fields:
-
-Company Name
-
-Text input.
-
-Job Role
-
-Text input.
-
-Status
-
-Dropdown:
-
-Applied
-
-Assessment
-
-Interview
-
-Selected
-
-Rejected
-
-Application Date
-
-Date input.
-
-Location
-
-Text input.
-
-Notes
-
-Textarea.
-
-Buttons:
-
-Cancel
-
-Add Application
-
-After adding an application, update the application list and dashboard statistics.
-
-6. EDIT APPLICATION
-
-Allow users to edit an existing application.
-
-Use the same application form where practical.
-
-The user should be able to update:
-
-Company
-
-Role
-
-Status
-
-Application Date
-
-Location
-
-Notes
-
-After updating, the table and dashboard should update.
-
-7. DELETE APPLICATION
-
-Allow users to delete an application.
-
-Before deletion, show a confirmation dialog:
-
-Delete this application?
-
-Message:
-
-This action cannot be undone.
-
-Buttons:
-
-Cancel
-
-Delete
-
-After deletion, update the table and dashboard statistics.
-
-8. APPLICATION DETAILS
-
-Create:
-
+```text
 /applications/:id
 
-Show the complete application information:
+---
+
+## 🗄️ Database
+
+CampusTrack uses PostgreSQL through Supabase.
+
+### Profiles
+
+The `profiles` table stores basic user information.
+
+| Column | Description |
+|---|---|
+| `id` | User identifier |
+| `name` | User name |
+| `email` | User email |
+| `created_at` | Profile creation timestamp |
 
-Company
+### Applications
 
-Role
+The `applications` table stores placement application information.
 
-Status
+| Column | Description |
+|---|---|
+| `id` | Application identifier |
+| `user_id` | User who owns the application |
+| `company` | Company name |
+| `role` | Job role |
+| `status` | Recruitment status |
+| `application_date` | Application date |
+| `location` | Job location |
+| `notes` | Additional information |
+| `created_at` | Creation timestamp |
+| `updated_at` | Last update timestamp |
 
-Application Date
+Authentication users are managed through Supabase Authentication.
 
-Location
+---
 
-Notes
+## 🔒 Row Level Security
 
-Provide buttons:
+CampusTrack uses PostgreSQL Row Level Security (RLS) to protect user-specific application data.
 
-Edit Application
+Every application is associated with its owner through:
 
-Delete Application
+```text
+user_id
 
-Back to Applications
+---
 
-Use a clean layout.
+## 📁 Project Structure
 
-Desktop:
+```text
+campus-track-buddy-85/
+│
+├── public/
+│
+├── src/
+│   │
+│   ├── components/
+│   │
+│   ├── integrations/
+│   │   ├── lovable/
+│   │   └── supabase/
+│   │
+│   ├── lib/
+│   │
+│   ├── pages/
+│   │   ├── Login.jsx
+│   │   ├── Register.jsx
+│   │   ├── Dashboard.jsx
+│   │   ├── Applications.jsx
+│   │   └── ApplicationDetails.jsx
+│   │
+│   ├── services/
+│   │   ├── authService.js
+│   │   └── applicationService.js
+│   │
+│   ├── main.tsx
+│   └── routeTree.gen.ts
+│
+├── .env.example
+├── .gitignore
+├── package.json
+├── vite.config.ts
+└── README.md
 
-Use a simple two-column information layout where appropriate.
+---
 
-Mobile:
+## 🚀 Getting Started
 
-Use a single-column layout.
+### Prerequisites
 
-APPLICATION STATUS
+- Node.js
+- npm
+- Git
 
-Use ONLY these five statuses:
+### Installation
 
-Applied
+```bash
+git clone https://github.com/Aakash100101/campus-track-buddy-85.git
+cd campus-track-buddy-85
+npm install
 
-Assessment
 
-Interview
+### 11. Live Demo & GitHub
 
-Selected
+Iske neeche:
 
-Rejected
+```markdown
+---
 
-Do not add unnecessary workflow stages.
+## 🌐 Live Demo
 
-MOCK DATA
+[CampusTrack](https://campus-track-buddy-85.lovable.app)
 
-For this frontend phase, create a small realistic mock dataset.
+## 💻 GitHub Repository
 
-Example companies:
+[View Source Code](https://github.com/Aakash100101/campus-track-buddy-85)
 
-Infosys
+---
 
-TCS
+## 👨‍💻 Author
 
-HCL
+### Aakash Pandey
 
-Capgemini
+B.Tech — Computer Science & Engineering (Data Science)
 
-Accenture
+ABES Engineering College
 
-Keep mock data separate from UI components.
-
-Create:
-
-src/data/applications.js
-
-The mock data should contain fields such as:
-
-id
-
-company
-
-role
-
-status
-
-applicationDate
-
-location
-
-notes
-
-FRONTEND DATA STRUCTURE
-
-Create a simple service layer:
-
-src/services/applicationService.js
-
-Create functions such as:
-
-getApplications()
-
-getApplicationById()
-
-createApplication()
-
-updateApplication()
-
-deleteApplication()
-
-For this phase these functions can work with mock/local data.
-
-The important requirement is that page components should NOT directly contain all data-management logic.
-
-Later, these service functions will make requests to FastAPI REST APIs.
-
-COMPONENT STRUCTURE
-
-Use reusable React components.
-
-Suggested structure:
-
-src/
-components/
-Sidebar.jsx
-Header.jsx
-StatCard.jsx
-StatusBadge.jsx
-ApplicationTable.jsx
-ApplicationForm.jsx
-ConfirmDialog.jsx
-EmptyState.jsx
-
-pages/
-Login.jsx
-Register.jsx
-Dashboard.jsx
-Applications.jsx
-ApplicationDetails.jsx
-
-services/
-applicationService.js
-
-data/
-applications.js
-
-App.jsx
-
-Use JavaScript files.
-
-Do NOT create TypeScript files.
-
-Do not over-engineer the component architecture.
-
-FRONTEND BEHAVIOR
-
-The application should actually work in the browser.
-
-Implement:
-
-Navigation between pages
-
-Add application
-
-Edit application
-
-Delete application
-
-View application details
-
-Search
-
-Filter
-
-Dashboard statistics
-
-Status chart
-
-Empty state when no applications exist
-
-Basic loading states
-
-Basic error states
-
-When application data changes, dashboard statistics and charts should reflect the updated data.
-
-RESPONSIVE DESIGN
-
-The application must work properly on:
-
-Desktop
-
-Tablet
-
-Mobile
-
-Desktop:
-
-Use a compact sidebar.
-
-Mobile:
-
-Use a responsive navigation menu/drawer.
-
-Tables should remain usable on smaller screens.
-
-CODE QUALITY
-
-Keep the code easy for a beginner/intermediate React developer to understand.
-
-Use:
-
-React components
-
-useState
-
-useEffect where actually necessary
-
-React Router
-
-Simple JavaScript functions
-
-Reusable components
-
-Clear variable names
-
-Simple state management
-
-Do NOT introduce advanced state-management libraries.
-
-Do NOT over-engineer the application.
-
-Avoid huge components.
-
-Avoid duplicated code where a simple reusable component makes sense.
-
-IMPORTANT FUTURE ARCHITECTURE
-
-The final project will eventually use:
-
-React.js
-↓
-REST API
-↓
-FastAPI
-↓
-SQLAlchemy ORM
-↓
-MySQL
-
-But ONLY build the React frontend in this phase.
-
-Later we will add:
-
-Phase 2
-
-FastAPI backend and REST APIs.
-
-Phase 3
-
-MySQL database and SQLAlchemy ORM.
-
-Phase 4
-
-JWT authentication and protected routes.
-
-Phase 5
-
-Connect React frontend to FastAPI.
-
-Phase 6
-
-Testing, error handling, deployment, GitHub README, and resume preparation.
-
-Do not implement these future phases now.
-
-FINAL REQUIREMENT
-
-The finished frontend should look polished enough to put in a portfolio while remaining simple enough that a student can explain every major component and feature during an interview.
-
-The project should demonstrate:
-
-React fundamentals
-
-Component-based development
-
-React Router
-
-State management with hooks
-
-CRUD UI
-
-REST API-ready architecture
-
-Responsive design
-
-Basic data visualization
-
-Do not add features just to make the project appear bigger.
-
-At the end, provide:
-
-Pages created
-
-Components created
-
-Folder structure
-
-How application data is currently managed
-
-Where FastAPI will later be connected
-
-Any dependencies installed
-
-This project was built with [Lovable](https://lovable.dev).
-
-## Build with Lovable
-
-Continue developing this project in the [Lovable editor](https://lovable.dev/projects/b0a317c8-1490-4f78-b155-11688928d48d).
-
-- **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: every change made in Lovable is committed straight to this repository.
-- **Full ownership**: this code is yours. Push to `main` on GitHub and your changes sync back into Lovable, ready for your next prompt.
-
-## Development
-
-Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
-
-```sh
-git clone <this-repository-url>
-cd <repository-name>
-npm i
-npm run dev
-```
+[GitHub](https://github.com/Aakash100101)
